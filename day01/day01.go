@@ -11,21 +11,23 @@ import (
 	"strings"
 )
 
+var INPUT_PATH = "day01/input.txt"
+
 func Run(part *string) {
 	if part == nil {
-		part1()
-		part2()
+		part1(INPUT_PATH)
+		part2(INPUT_PATH)
 	} else if *part == "1" {
-		part1()
+		part1(INPUT_PATH)
 	} else if *part == "2" {
-		part2()
+		part2(INPUT_PATH)
 	} else {
 		fmt.Println("INVALID INPUT")
 	}
 }
 
-func parse_lists() ([]int, []int) {
-	content := file_reader.Read("day01/input.txt")
+func parse_lists(path string) ([]int, []int) {
+	content := file_reader.Read(path)
 
 	lines := strings.Split(content, "\n")
 
@@ -49,10 +51,10 @@ func parse_lists() ([]int, []int) {
 	return listA, listB
 }
 
-func part1() {
+func part1(path string) int {
 	fmt.Println("Day 01, Part 1")
 
-	listA, listB := parse_lists()
+	listA, listB := parse_lists(path)
 
 	sort.Ints(listA)
 	sort.Ints(listB)
@@ -66,12 +68,13 @@ func part1() {
 	}
 
 	fmt.Printf("ANSWER IS: %d\n", sum)
+	return sum
 }
 
-func part2() {
+func part2(path string) int {
 	fmt.Println("Day 01, Part 2")
 
-	listA, listB := parse_lists()
+	listA, listB := parse_lists(path)
 
 	countMap := map[int]int{}
 
@@ -94,4 +97,6 @@ func part2() {
 	}
 
 	fmt.Printf("ANSWER IS %d\n", sum)
+
+	return sum
 }
