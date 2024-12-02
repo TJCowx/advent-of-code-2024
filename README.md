@@ -12,7 +12,7 @@ go run main.go 1 # Runs just day 1
 ## Days
 
 1. 🌟🌟
-2.
+2. 🌟🌟
 3.
 4.
 5.
