@@ -1,5 +1,7 @@
 package day04
 
+// https://adventofcode.com/2024/day/3
+
 import (
 	"advent-of-code-2024/file_reader"
 	"fmt"
@@ -76,20 +78,6 @@ func nextChar(curr string) string {
 	}
 }
 
-func prevChar(curr string) string {
-	switch curr {
-	case "S":
-		return "A"
-	case "A":
-		return "M"
-	case "M":
-		return "X"
-	default:
-		fmt.Printf("FOUND OTHER: %s", curr)
-		return ""
-	}
-}
-
 func nextIndex(currX int, currY int, dir Direction) (int, int) {
 	x := currX
 	y := currY
@@ -132,7 +120,7 @@ func isInBounds(board [][]string, x int, y int) bool {
 	return true
 }
 
-func checkNeighbour(board [][]string, x int, y int, dir Direction, checkingChar string) (int, [][]int) {
+func checkNeighbourP1(board [][]string, x int, y int, dir Direction, checkingChar string) (int, [][]int) {
 	nextX, nextY := nextIndex(x, y, dir)
 
 	if !isInBounds(board, nextX, nextY) {
@@ -141,9 +129,9 @@ func checkNeighbour(board [][]string, x int, y int, dir Direction, checkingChar 
 
 	if board[nextY][nextX] == checkingChar {
 		if checkingChar == "S" {
-			return 1, [][]int{{x, y}, {nextX, nextY}}
+			return 1, [][]int{{nextX, nextY}, {x, y}}
 		}
-		val, coords := checkNeighbour(board, nextX, nextY, dir, nextChar(checkingChar))
+		val, coords := checkNeighbourP1(board, nextX, nextY, dir, nextChar(checkingChar))
 
 		if val == 1 {
 			coords = append(coords, []int{x, y})
@@ -152,6 +140,55 @@ func checkNeighbour(board [][]string, x int, y int, dir Direction, checkingChar 
 	}
 
 	return 0, [][]int{}
+}
+
+func checkNeighbourForX(board [][]string, x int, y int) (int, [][]int) {
+	// Check if top-left has S or M
+	topLeftX, topLeftY := nextIndex(x, y, UpLeft)
+	if !isInBounds(board, topLeftX, topLeftY) {
+		return 0, [][]int{}
+	}
+	tl := board[topLeftY][topLeftX]
+	if tl != "S" && tl != "M" {
+		return 0, [][]int{}
+	}
+	// Check if bottom-right has the other
+	bottomRightX, bottomRightY := nextIndex(x, y, DownRight)
+	if !isInBounds(board, bottomRightX, bottomRightY) {
+		return 0, [][]int{}
+	}
+	br := board[bottomRightY][bottomRightX]
+	if (br == "S" && tl != "M") || (br == "M" && tl != "S") || (br != "M" && br != "S") {
+		return 0, [][]int{}
+	}
+
+	// Check if top-right as S or M
+	topRightX, topRightY := nextIndex(x, y, UpRight)
+	if !isInBounds(board, topRightX, topRightY) {
+		return 0, [][]int{}
+	}
+	tr := board[topRightY][topRightX]
+	if tr != "S" && tr != "M" {
+		return 0, [][]int{}
+	}
+	// Check if bototm-left has the other
+	bottomLeftX, bottomLeftY := nextIndex(x, y, DownLeft)
+	if !isInBounds(board, bottomLeftX, bottomLeftY) {
+		return 0, [][]int{}
+	}
+	bl := board[bottomLeftY][bottomLeftX]
+
+	if (bl == "S" && tr != "M") || (bl == "M" && tr != "S") || (bl != "M" && bl != "S") {
+		return 0, [][]int{}
+	}
+
+	return 1, [][]int{
+		{topLeftX, topLeftY},
+		{x, y},
+		{bottomRightX, bottomRightY},
+		{topRightX, topRightY},
+		{bottomLeftX, bottomLeftY},
+	}
 }
 
 func pPrint(board [][]string) {
@@ -187,6 +224,19 @@ func removeNonSafe(board [][]string, safeCoords map[string]bool) {
 	pPrint(boardCopy)
 }
 
+func printCoords(board [][]string, coords [][]int) {
+	if len(coords) == 0 {
+		return
+	}
+	var str = ""
+
+	for _, coord := range coords {
+		str += board[coord[1]][coord[0]]
+	}
+
+	fmt.Printf("MATCH: %s\n", str)
+}
+
 func part1(path string) int {
 	fmt.Println("DAY 04 PART 1")
 	input := file_reader.Read(path)
@@ -201,7 +251,7 @@ func part1(path string) int {
 		for x, item := range row {
 			if item == "X" {
 				for _, dir := range DIRECTIONS {
-					val, safeCoords := checkNeighbour(board, x, y, dir, "M")
+					val, safeCoords := checkNeighbourP1(board, x, y, dir, "M")
 					allSafeCoords = addToMap(allSafeCoords, safeCoords)
 					sum += val
 				}
@@ -219,7 +269,30 @@ func part1(path string) int {
 
 func part2(path string) int {
 	fmt.Println("DAY 04 PART 2")
-	fmt.Println("NOT IMPLEMENTED")
+	input := file_reader.Read(path)
+	board := parseInput(input)
+	sum := 0
 
-	return 0
+	// DEBUGGING
+	//pPrint(board)
+	allSafeCoords := make(map[string]bool)
+
+	for y, row := range board {
+		for x, item := range row {
+			if item == "A" {
+				// Check top left
+				val, safeCoords := checkNeighbourForX(board, x, y)
+				allSafeCoords = addToMap(allSafeCoords, safeCoords)
+
+				sum += val
+			}
+		}
+	}
+
+	// DEBUGGING
+	// removeNonSafe(board, allSafeCoords)
+
+	fmt.Printf("RESULT: %d\n", sum)
+
+	return sum
 }

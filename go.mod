@@ -52,4 +52,6 @@ replace advent-of-code-2024/day25 => ./day25
 
 replace advent-of-code-2024/file_reader => ./file_reader
 
+replace advent-of-code-2024/utils => ./utils
+
 go 1.23.1
