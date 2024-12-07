@@ -34,14 +34,15 @@ func Run(part *string) {
 }
 
 type Board struct {
-	tiles        [][]string
-	width        int
-	height       int
-	blockedTiles map[string]bool
-	X            int
-	Y            int
-	dir          Direction
-	Visited      map[string]bool
+	tiles              [][]string
+	width              int
+	height             int
+	blockedTiles       map[string]bool
+	X                  int
+	Y                  int
+	dir                Direction
+	Visited            map[string]bool
+	visitedDirectional map[string]bool
 }
 
 func getBoard(path string) Board {
@@ -72,14 +73,15 @@ func getBoard(path string) Board {
 	}
 
 	return Board{
-		tiles:        tiles,
-		width:        width,
-		height:       height,
-		blockedTiles: blockedTiles,
-		X:            startX,
-		Y:            startY,
-		dir:          Up,
-		Visited:      make(map[string]bool),
+		tiles:              tiles,
+		width:              width,
+		height:             height,
+		blockedTiles:       blockedTiles,
+		X:                  startX,
+		Y:                  startY,
+		dir:                Up,
+		Visited:            make(map[string]bool),
+		visitedDirectional: make(map[string]bool),
 	}
 }
 
@@ -181,7 +183,13 @@ func part1(path string) int {
 
 func part2(path string) int {
 	fmt.Println("DAY 06 PART 1")
-	fmt.Println("NOT IMPLEMENTED")
+	content := file_reader.Read(path)
+	lines := strings.Split(content, "\n")
+	if len(lines) > 0 && lines[len(lines)-1] == "" {
+		lines = lines[:len(lines)-1]
+	}
 
-	return 0
+	infiniteLoops := 0
+
+	return infiniteLoops
 }
