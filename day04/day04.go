@@ -1,6 +1,6 @@
 package day04
 
-// https://adventofcode.com/2024/day/3
+// https://adventofcode.com/2024/day/4
 
 import (
 	"advent-of-code-2024/file_reader"

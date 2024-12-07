@@ -1,5 +1,7 @@
 package day05
 
+// https://adventofcode.com/2024/day/5
+
 import (
 	"advent-of-code-2024/file_reader"
 	"fmt"
@@ -79,6 +81,34 @@ func parseInput(path string) (map[int]map[int]bool, [][]int) {
 	return pageOrderRules, orders
 }
 
+func isOrdered(rules map[int]map[int]bool, order []int) bool {
+	var prevPrinted []int
+	isOrdered := true
+	for i := 0; i < len(order); i++ {
+		prevPrinted = append(prevPrinted, order[i])
+		if i == 0 {
+			continue
+		}
+		// This number exists in a rule
+		if rulesSecond, exists := rules[order[i]]; exists {
+			// Get the values before we're in it
+			for _, page := range prevPrinted {
+				_, exists := rulesSecond[page]
+
+				if exists {
+					isOrdered = false
+					break
+				}
+			}
+		}
+
+		if !isOrdered {
+			break
+		}
+	}
+	return isOrdered
+}
+
 func part1(path string) int {
 	fmt.Println("DAY 05 PART 1")
 	rules, orders := parseInput(path)
@@ -86,33 +116,7 @@ func part1(path string) int {
 	sum := 0
 
 	for _, orderSet := range orders {
-		isOrdered := true
-		fmt.Println(orderSet)
-		var prevPrinted []int
-		for i := 0; i < len(orderSet); i++ {
-			prevPrinted = append(prevPrinted, orderSet[i])
-			if i == 0 {
-				continue
-			}
-			// This number exists in a rule
-			if rulesSecond, exists := rules[orderSet[i]]; exists {
-				// Get the values before we're in it
-				for _, page := range prevPrinted {
-					_, exists := rulesSecond[page]
-
-					if exists {
-						isOrdered = false
-						break
-					}
-				}
-			}
-
-			if !isOrdered {
-				break
-			}
-		}
-
-		if isOrdered {
+		if isOrdered(rules, orderSet) {
 			sum += orderSet[len(orderSet)/2]
 		}
 	}
@@ -122,9 +126,42 @@ func part1(path string) int {
 	return sum
 }
 
-func part2(path string) int {
-	fmt.Println("DAY 05 PART 2")
-	fmt.Println("NOT IMPLEMENTED")
+func getOutOfOrdered(rules map[int]map[int]bool, orders [][]int) [][]int {
+	var outOfOrdered [][]int
+
+	for _, order := range orders {
+		if !isOrdered(rules, order) {
+			outOfOrdered = append(outOfOrdered, order)
+		}
+	}
+
+	return outOfOrdered
+}
+
+func orderPagesRecur(rules map[int]map[int]bool, prevPages []int, left []int) bool {
+	return false
+}
+
+func getOrderedSum(rules map[int]map[int]bool, order []int) int {
+	for i := 0; i < len(order); i++ {
+
+	}
 
 	return 0
+}
+
+func part2(path string) int {
+	fmt.Println("DAY 05 PART 2")
+	rules, orders := parseInput(path)
+
+	sum := 0
+
+	outOfOrdered := getOutOfOrdered(rules, orders)
+
+	for _, order := range outOfOrdered {
+		sum += getOrderedSum(rules, order)
+	}
+
+	fmt.Printf("RESULT: %d\n", sum)
+	return sum
 }
