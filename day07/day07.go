@@ -32,6 +32,7 @@ type Operand int
 const (
 	Add Operand = iota
 	Multiply
+	Concat
 )
 
 func buildEval(line string) Evaluation {
@@ -53,9 +54,15 @@ func buildEval(line string) Evaluation {
 	return Evaluation{total, nums}
 }
 
-func (e *Evaluation) Solve() int {
-	if evaluate(e.total, 0, e.nums, Add) || evaluate(e.total, 0, e.nums, Multiply) {
-		return e.total
+func (e *Evaluation) Solve(isPartOne bool) int {
+	if isPartOne {
+		if evaluate(e.total, 0, e.nums, Add) || evaluate(e.total, 0, e.nums, Multiply) {
+			return e.total
+		}
+	} else {
+		if evaluatePart2(e.total, 0, e.nums, Add) || evaluatePart2(e.total, 0, e.nums, Multiply) || evaluatePart2(e.total, 0, e.nums, Concat) {
+			return e.total
+		}
 	}
 
 	return 0
@@ -82,6 +89,34 @@ func evaluate(target int, current int, nums []int, operand Operand) bool {
 	return evaluate(target, currCopy, rest, Add) || evaluate(target, currCopy, rest, Multiply)
 }
 
+func evaluatePart2(target int, current int, nums []int, operand Operand) bool {
+	if len(nums) == 0 {
+		return current == target
+	}
+
+	currCopy := current
+	next := nums[0]
+	if operand == Add {
+		currCopy += next
+	} else if operand == Multiply {
+		currCopy *= next
+	} else {
+		concatStr := strconv.Itoa(currCopy) + strconv.Itoa(next)
+		concatNum, _ := strconv.Atoi(concatStr)
+		currCopy = concatNum
+	}
+
+	if current > target {
+		return false
+	}
+
+	rest := nums[1:]
+
+	return evaluatePart2(target, currCopy, rest, Add) ||
+		evaluatePart2(target, currCopy, rest, Multiply) ||
+		evaluatePart2(target, currCopy, rest, Concat)
+}
+
 func part1(path string) int {
 	fmt.Println("DAY 07 PART 1")
 	content := file_reader.Read(path)
@@ -94,7 +129,7 @@ func part1(path string) int {
 
 	for _, line := range lines {
 		eval := buildEval(line)
-		sum += eval.Solve()
+		sum += eval.Solve(true)
 	}
 
 	fmt.Printf("RESULT: %d\n", sum)
@@ -105,5 +140,20 @@ func part1(path string) int {
 func part2(path string) int {
 	fmt.Println("DAY 07 PART 2")
 
-	return 0
+	content := file_reader.Read(path)
+	lines := strings.Split(content, "\n")
+	if len(lines) > 0 && lines[len(lines)-1] == "" {
+		lines = lines[:len(lines)-1]
+	}
+
+	sum := 0
+
+	for _, line := range lines {
+		eval := buildEval(line)
+		sum += eval.Solve(false)
+	}
+
+	fmt.Printf("RESULT: %d\n", sum)
+
+	return sum
 }

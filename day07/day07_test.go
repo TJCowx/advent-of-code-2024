@@ -15,7 +15,7 @@ func TestPart1(t *testing.T) {
 
 func TestPart2(t *testing.T) {
 	got := part2(TEST_PATH)
-	var expected int = 6
+	var expected int = 11387
 
 	if got != expected {
 		t.Errorf("Got %d, expected %d", got, expected)
