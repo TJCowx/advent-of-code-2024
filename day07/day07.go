@@ -2,10 +2,10 @@ package day07
 
 import (
 	"advent-of-code-2024/file_reader"
+	"advent-of-code-2024/utils"
 	"fmt"
 	"strconv"
 	"strings"
-	"time"
 )
 
 var INPUT_PATH = "day07/input.txt"
@@ -215,29 +215,28 @@ func part1(path string) (int, int) {
 
 	sum := 0
 
-	start := time.Now()
+	timer := utils.BuildTimer()
+	timer.Start()
 	for _, line := range lines {
 		eval := buildEval(line)
 		sum += eval.Solve(true, true)
 	}
-	end := time.Now()
-	timeToRun := end.Sub(start)
+	timer.End()
 
 	fmt.Println("BRUTE FORCE")
-	fmt.Printf("RESULT: %d | RUN TIME: %s\n", sum, timeToRun)
+	fmt.Printf("RESULT: %d | RUN TIME: %s\n", sum, timer.TimeLapsed())
 
 	sumOpt := 0
 
-	start = time.Now()
+	timer.Start()
 	for _, line := range lines {
 		eval := buildEval(line)
 		sumOpt += eval.Solve(true, false)
 	}
-	end = time.Now()
-	timeToRun = end.Sub(start)
+	timer.End()
 
 	fmt.Println("OPTIMIZED")
-	fmt.Printf("RESULT: %d | RUN TIME: %s\n", sumOpt, timeToRun)
+	fmt.Printf("RESULT: %d | RUN TIME: %s\n", sumOpt, timer.TimeLapsed())
 
 	return sum, sumOpt
 }
@@ -253,29 +252,28 @@ func part2(path string) (int, int) {
 
 	sum := 0
 
-	start := time.Now()
+	timer := utils.BuildTimer()
+	timer.Start()
 	for _, line := range lines {
 		eval := buildEval(line)
 		sum += eval.Solve(false, true)
 	}
-	end := time.Now()
-	timeToRun := end.Sub(start)
+	timer.End()
 
 	fmt.Println("BRUTE FORCE")
-	fmt.Printf("RESULT: %d | RUN TIME: %s\n", sum, timeToRun)
+	fmt.Printf("RESULT: %d | RUN TIME: %s\n", sum, timer.TimeLapsed())
 
 	sumOpt := 0
 
-	start = time.Now()
+	timer.Start()
 	for _, line := range lines {
 		eval := buildEval(line)
 		sumOpt += eval.Solve(false, false)
 	}
-	end = time.Now()
-	timeToRun = end.Sub(start)
+	timer.End()
 
 	fmt.Println("OPTIMIZED")
-	fmt.Printf("RESULT: %d | RUN TIME: %s\n", sumOpt, timeToRun)
+	fmt.Printf("RESULT: %d | RUN TIME: %s\n", sumOpt, timer.TimeLapsed())
 
 	return sum, sumOpt
 }
