@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"strconv"
 	"strings"
+	"time"
 )
 
 var INPUT_PATH = "day07/input.txt"
@@ -35,6 +36,20 @@ const (
 	Concat
 )
 
+func (o *Operand) Fmt() string {
+	switch *o {
+	case Add:
+		return "Add"
+	case Multiply:
+		return "Multiply"
+	case Concat:
+		return "Concat"
+	default:
+		return "I DO NOT KNOW"
+
+	}
+}
+
 func buildEval(line string) Evaluation {
 	sects := strings.Split(line, ":")
 
@@ -54,13 +69,22 @@ func buildEval(line string) Evaluation {
 	return Evaluation{total, nums}
 }
 
-func (e *Evaluation) Solve(isPartOne bool) int {
-	if isPartOne {
-		if evaluate(e.total, 0, e.nums, Add) || evaluate(e.total, 0, e.nums, Multiply) {
+func (e *Evaluation) Solve(isPartOne bool, brute bool) int {
+	if isPartOne && brute {
+		if evalP1Brute(e.total, 0, e.nums, Add) || evalP1Brute(e.total, 0, e.nums, Multiply) {
 			return e.total
 		}
+	} else if isPartOne && !brute {
+		if evalP1Opt(e.total, e.nums, Multiply) || evalP1Opt(e.total, e.nums, Add) {
+			return e.total
+		}
+	} else if brute {
+		if evalP2Brute(e.total, 0, e.nums, Add) || evalP2Brute(e.total, 0, e.nums, Multiply) || evalP2Brute(e.total, 0, e.nums, Concat) {
+			return e.total
+		}
+
 	} else {
-		if evaluatePart2(e.total, 0, e.nums, Add) || evaluatePart2(e.total, 0, e.nums, Multiply) || evaluatePart2(e.total, 0, e.nums, Concat) {
+		if evalP2Opt(e.total, e.nums, Concat) || evalP2Opt(e.total, e.nums, Multiply) || evalP2Opt(e.total, e.nums, Add) {
 			return e.total
 		}
 	}
@@ -68,7 +92,7 @@ func (e *Evaluation) Solve(isPartOne bool) int {
 	return 0
 }
 
-func evaluate(target int, current int, nums []int, operand Operand) bool {
+func evalP1Brute(target int, current int, nums []int, operand Operand) bool {
 	if len(nums) == 0 {
 		return current == target
 	}
@@ -86,12 +110,43 @@ func evaluate(target int, current int, nums []int, operand Operand) bool {
 
 	rest := nums[1:]
 
-	return evaluate(target, currCopy, rest, Add) || evaluate(target, currCopy, rest, Multiply)
+	return evalP1Brute(target, currCopy, rest, Add) || evalP1Brute(target, currCopy, rest, Multiply)
 }
 
-func evaluatePart2(target int, current int, nums []int, operand Operand) bool {
+func evalP1Opt(current int, nums []int, op Operand) bool {
+	if len(nums) == 0 {
+		return current == 0
+	}
+
+	if current <= 0 {
+		return false
+	}
+
+	num := nums[len(nums)-1]
+
+	currCopy := current
+	if op == Add {
+		currCopy -= num
+	} else {
+		// The current number has to be a multiple, otherwise it's not a valid answer
+		if current%num != 0 {
+			return false
+		}
+		currCopy /= num
+	}
+
+	rest := nums[:len(nums)-1]
+
+	return evalP1Opt(currCopy, rest, Multiply) || evalP1Opt(currCopy, rest, Add)
+}
+
+func evalP2Brute(target int, current int, nums []int, operand Operand) bool {
 	if len(nums) == 0 {
 		return current == target
+	}
+
+	if current > target {
+		return false
 	}
 
 	currCopy := current
@@ -106,18 +161,51 @@ func evaluatePart2(target int, current int, nums []int, operand Operand) bool {
 		currCopy = concatNum
 	}
 
-	if current > target {
+	rest := nums[1:]
+
+	return evalP2Brute(target, currCopy, rest, Add) ||
+		evalP2Brute(target, currCopy, rest, Multiply) ||
+		evalP2Brute(target, currCopy, rest, Concat)
+}
+
+func evalP2Opt(current int, nums []int, op Operand) bool {
+	if len(nums) == 0 {
+		return current == 0
+	}
+
+	if current <= 0 && op != Concat {
 		return false
 	}
 
-	rest := nums[1:]
+	currCopy := current
+	next := nums[len(nums)-1]
+	rest := nums[:len(nums)-1]
+	if op == Add {
+		currCopy -= next
+	} else if op == Multiply {
+		// The current number has to be a multiple, otherwise it's not a valid answer
+		if current%next != 0 {
+			return false
+		}
+		currCopy /= next
+	} else {
+		currStr := strconv.Itoa(currCopy)
+		nextStr := strconv.Itoa(next)
+		// We need to end with the number
+		if !strings.HasSuffix(currStr, nextStr) {
+			return false
+		}
 
-	return evaluatePart2(target, currCopy, rest, Add) ||
-		evaluatePart2(target, currCopy, rest, Multiply) ||
-		evaluatePart2(target, currCopy, rest, Concat)
+		currStr = currStr[:len(currStr)-len(nextStr)]
+		currCopy, _ = strconv.Atoi(currStr)
+	}
+
+	return evalP2Opt(currCopy, rest, Concat) ||
+		evalP2Opt(currCopy, rest, Multiply) ||
+		evalP2Opt(currCopy, rest, Add)
 }
 
-func part1(path string) int {
+func part1(path string) (int, int) {
 	fmt.Println("DAY 07 PART 1")
 	content := file_reader.Read(path)
 	lines := strings.Split(content, "\n")
@@ -127,17 +215,34 @@ func part1(path string) int {
 
 	sum := 0
 
+	start := time.Now()
 	for _, line := range lines {
 		eval := buildEval(line)
-		sum += eval.Solve(true)
+		sum += eval.Solve(true, true)
 	}
+	end := time.Now()
+	timeToRun := end.Sub(start)
 
-	fmt.Printf("RESULT: %d\n", sum)
+	fmt.Println("BRUTE FORCE")
+	fmt.Printf("RESULT: %d | RUN TIME: %s\n", sum, timeToRun)
 
-	return sum
+	sumOpt := 0
+
+	start = time.Now()
+	for _, line := range lines {
+		eval := buildEval(line)
+		sumOpt += eval.Solve(true, false)
+	}
+	end = time.Now()
+	timeToRun = end.Sub(start)
+
+	fmt.Println("OPTIMIZED")
+	fmt.Printf("RESULT: %d | RUN TIME: %s\n", sumOpt, timeToRun)
+
+	return sum, sumOpt
 }
 
-func part2(path string) int {
+func part2(path string) (int, int) {
 	fmt.Println("DAY 07 PART 2")
 
 	content := file_reader.Read(path)
@@ -148,12 +253,29 @@ func part2(path string) int {
 
 	sum := 0
 
+	start := time.Now()
 	for _, line := range lines {
 		eval := buildEval(line)
-		sum += eval.Solve(false)
+		sum += eval.Solve(false, true)
 	}
+	end := time.Now()
+	timeToRun := end.Sub(start)
 
-	fmt.Printf("RESULT: %d\n", sum)
+	fmt.Println("BRUTE FORCE")
+	fmt.Printf("RESULT: %d | RUN TIME: %s\n", sum, timeToRun)
 
-	return sum
+	sumOpt := 0
+
+	start = time.Now()
+	for _, line := range lines {
+		eval := buildEval(line)
+		sumOpt += eval.Solve(false, false)
+	}
+	end = time.Now()
+	timeToRun = end.Sub(start)
+
+	fmt.Println("OPTIMIZED")
+	fmt.Printf("RESULT: %d | RUN TIME: %s\n", sumOpt, timeToRun)
+
+	return sum, sumOpt
 }

@@ -45,7 +45,13 @@ func main() {
 		log.Fatal("Incorrect format, must be 'day-part' format or just 'day' (1-1 or 1)")
 	}
 
-	day, part := parts[0], parts[1]
+	day := parts[0]
+	var part *string
+	if len(parts) > 1 {
+		part = &parts[1]
+	} else {
+		part = nil
+	}
 
 	dayFuncs := map[string]func(*string){
 		"1":  day01.Run,
@@ -76,7 +82,7 @@ func main() {
 	}
 
 	if runFunc, exists := dayFuncs[day]; exists {
-		runFunc(&part)
+		runFunc(part)
 	} else {
 		fmt.Printf("Day %s not found", day)
 	}
