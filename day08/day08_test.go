@@ -11,6 +11,13 @@ func TestPart1(t *testing.T) {
 	if got != expected {
 		t.Errorf("Got %d, expected %d", got, expected)
 	}
+
+	got = part1("./test-input-2.txt")
+	expected = 3
+
+	if got != expected {
+		t.Errorf("Got %d, expected %d", got, expected)
+	}
 }
 
 func TestPart2(t *testing.T) {

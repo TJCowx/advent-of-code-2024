@@ -6,22 +6,19 @@ import (
 	"advent-of-code-2024/file_reader"
 	"advent-of-code-2024/utils"
 	"fmt"
+	"image"
 	"strings"
 )
 
 var INPUT_PATH string = "day08/input.txt"
 
-type AtennaMap struct {
-	width       int
-	height      int
-	beaconNodes map[string][]Coord
-	antiNodes   map[Coord]bool
-	taken       map[Coord]bool
-}
-
-type Coord struct {
-	x int
-	y int
+type BeaconMap struct {
+	board          [][]string
+	height         int
+	width          int
+	allBeacons     map[image.Point]string
+	countAntiNodes int
+	nodesByBeacon  map[string][]image.Point
 }
 
 func Run(part *string) {
@@ -37,105 +34,102 @@ func Run(part *string) {
 	}
 }
 
-func parseInput(path string) AtennaMap {
+func parseInput(path string) BeaconMap {
 	lines := file_reader.ReadIntoStrArr(path)
 
-	nodeMap := make(map[string][]Coord)
-	takenNodes := make(map[Coord]bool)
-	height := len(lines)
-	width := len(lines[0])
+	var board [][]string = make([][]string, len(lines))
+	beacons := make(map[image.Point]string)
+	nodesByBeacon := make(map[string][]image.Point)
 
 	for y, line := range lines {
 		chars := strings.Split(line, "")
-		for x, char := range chars {
-			if char != "." {
-				coord := Coord{x, y}
-				takenNodes[coord] = true
-				if val, exists := nodeMap[char]; exists {
-					nodeMap[char] = append(val, coord)
-				} else {
-					var newCoords []Coord
-					newCoords = append(newCoords, coord)
-					nodeMap[char] = newCoords
+		board[y] = make([]string, len(chars))
+
+		for x, c := range chars {
+			board[y][x] = c
+
+			if c != "." {
+				coord := image.Pt(x, y)
+				beacons[coord] = c
+				_, exists := nodesByBeacon[c]
+
+				if !exists {
+					nodesByBeacon[c] = make([]image.Point, 0)
 				}
+
+				nodesByBeacon[c] = append(nodesByBeacon[c], coord)
 			}
+
+			if c == "#" {
+				fmt.Println("THERE IS ALREAD YA # IN HERE WHAT THE")
+			}
+
 		}
 	}
 
-	return AtennaMap{
-		height:      height,
-		width:       width,
-		beaconNodes: nodeMap,
-		antiNodes:   make(map[Coord]bool),
-		taken:       takenNodes,
+	return BeaconMap{
+		board:          board,
+		height:         len(lines),
+		width:          len(lines[0]),
+		allBeacons:     beacons,
+		countAntiNodes: 0,
+		nodesByBeacon:  nodesByBeacon,
 	}
 }
 
-func getExtendedCoords(curr Coord, next Coord) (Coord, Coord) {
-	dx := next.x - curr.x
-	dy := next.y - curr.y
-
-	extendBack := Coord{
-		x: curr.x - dx,
-		y: curr.y - dy,
-	}
-
-	extendFwd := Coord{
-		x: next.x + dx,
-		y: next.y + dy,
-	}
-
-	return extendBack, extendFwd
+func (bm *BeaconMap) IsInBounds(coor image.Point) bool {
+	return coor.X >= 0 && coor.X < bm.width && coor.Y >= 0 && coor.Y < bm.height
 }
 
-func (a *AtennaMap) IsInBounds(node Coord) bool {
-	return node.x >= 0 && node.y >= 0 && node.x < a.width && node.y < a.height
+func (bm *BeaconMap) HasBeaconAlready(coord image.Point) bool {
+	_, exists := bm.allBeacons[coord]
+
+	return exists
 }
 
-func (a *AtennaMap) IsFree(node Coord) bool {
-	if _, exists := a.taken[node]; exists {
-		return false
-	}
-
-	return true
-}
-
-func (a *AtennaMap) Solve() int {
-	sum := 0
-	for _, nodes := range a.beaconNodes {
-		for i, node := range nodes {
+func (bm *BeaconMap) Solve() {
+	for _, nodes := range bm.nodesByBeacon {
+		for i := 0; i < len(nodes); i++ {
+			curr := nodes[i]
 			for j := i + 1; j < len(nodes); j++ {
-				backNode, fwdNode := getExtendedCoords(node, nodes[j])
+				next := nodes[j]
 
-				if a.IsInBounds(backNode) && a.IsFree(backNode) {
-					sum += 1
+				// Get the vector (delta) between the two nodes
+				delta := next.Sub(curr)
+
+				// Calculate the possible anti-nodes by extending both directions
+				// Forward: move from curr to next
+				fwd := next.Add(delta)
+				// Backward: move from next to curr
+				back := curr.Sub(delta)
+
+				if bm.IsInBounds(fwd) && !bm.HasBeaconAlready(fwd) {
+					bm.countAntiNodes += 1
 				}
 
-				if a.IsInBounds(fwdNode) && a.IsFree(fwdNode) {
-					sum += 1
+				if bm.IsInBounds(back) && !bm.HasBeaconAlready(back) {
+					bm.countAntiNodes += 1
 				}
 			}
 		}
 
 	}
-
-	return sum
 }
 
 func part1(path string) int {
 	fmt.Println("DAY 8 PART 1")
-	atennaMap := parseInput(path)
+	bMap := parseInput(path)
 
 	timer := utils.BuildTimer()
 	timer.Start()
 
-	res := atennaMap.Solve()
+	bMap.Solve()
 
 	timer.End()
 
-	fmt.Printf("RESULT: %d | TIME: %s\n", res, timer.TimeLapsed())
+	fmt.Printf("RESULT: %d | TIME: %s\n", bMap.countAntiNodes, timer.TimeLapsed())
 
-	return res
+	return bMap.countAntiNodes
 }
 
 func part2(path string) int {
