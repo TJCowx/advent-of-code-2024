@@ -1,5 +1,7 @@
 package day07
 
+// https://adventofcode.com/2024/day/7
+
 import (
 	"advent-of-code-2024/file_reader"
 	"advent-of-code-2024/utils"

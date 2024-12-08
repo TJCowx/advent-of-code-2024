@@ -4,6 +4,7 @@ import (
 	"bufio"
 	"log"
 	"os"
+	"strings"
 )
 
 func Read(path string) string {
@@ -25,4 +26,15 @@ func Read(path string) string {
 	}
 
 	return content
+}
+
+func ReadIntoStrArr(path string) []string {
+	content := Read(path)
+
+	lines := strings.Split(content, "\n")
+	if len(lines) > 0 && lines[len(lines)-1] == "" {
+		lines = lines[:len(lines)-1]
+	}
+
+	return lines
 }
