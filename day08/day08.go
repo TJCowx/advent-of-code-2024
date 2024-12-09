@@ -13,12 +13,12 @@ import (
 var INPUT_PATH string = "day08/input.txt"
 
 type BeaconMap struct {
-	board          [][]string
-	height         int
-	width          int
-	allBeacons     map[image.Point]string
-	countAntiNodes int
-	nodesByBeacon  map[string][]image.Point
+	board         [][]string
+	height        int
+	width         int
+	allBeacons    map[image.Point]string
+	antiNodes     map[image.Point]bool
+	nodesByBeacon map[string][]image.Point
 }
 
 func Run(part *string) {
@@ -59,21 +59,16 @@ func parseInput(path string) BeaconMap {
 
 				nodesByBeacon[c] = append(nodesByBeacon[c], coord)
 			}
-
-			if c == "#" {
-				fmt.Println("THERE IS ALREAD YA # IN HERE WHAT THE")
-			}
-
 		}
 	}
 
 	return BeaconMap{
-		board:          board,
-		height:         len(lines),
-		width:          len(lines[0]),
-		allBeacons:     beacons,
-		countAntiNodes: 0,
-		nodesByBeacon:  nodesByBeacon,
+		board:         board,
+		height:        len(lines),
+		width:         len(lines[0]),
+		allBeacons:    beacons,
+		antiNodes:     make(map[image.Point]bool),
+		nodesByBeacon: nodesByBeacon,
 	}
 }
 
@@ -81,10 +76,25 @@ func (bm *BeaconMap) IsInBounds(coor image.Point) bool {
 	return coor.X >= 0 && coor.X < bm.width && coor.Y >= 0 && coor.Y < bm.height
 }
 
-func (bm *BeaconMap) HasBeaconAlready(coord image.Point) bool {
-	_, exists := bm.allBeacons[coord]
+func (bm *BeaconMap) PrintSolved() {
+	fmt.Println(bm.antiNodes)
+	fmt.Println("==========BOARD=============")
+	for y, line := range bm.board {
+		var out string = ""
+		for x := range line {
+			coord := image.Point{X: x, Y: y}
 
-	return exists
+			if beacon, exists := bm.allBeacons[coord]; exists {
+				out += beacon
+			} else if _, exists := bm.antiNodes[coord]; exists {
+				out += "#"
+			} else {
+				out += "."
+			}
+		}
+
+		fmt.Println(out)
+	}
 }
 
 func (bm *BeaconMap) Solve() {
@@ -103,16 +113,47 @@ func (bm *BeaconMap) Solve() {
 				// Backward: move from next to curr
 				back := curr.Sub(delta)
 
-				if bm.IsInBounds(fwd) && !bm.HasBeaconAlready(fwd) {
-					bm.countAntiNodes += 1
+				if bm.IsInBounds(fwd) {
+					bm.antiNodes[fwd] = true
 				}
 
-				if bm.IsInBounds(back) && !bm.HasBeaconAlready(back) {
-					bm.countAntiNodes += 1
+				if bm.IsInBounds(back) {
+					bm.antiNodes[back] = true
 				}
 			}
 		}
+	}
+}
 
+func (bm *BeaconMap) SolveP2() {
+	for _, nodes := range bm.nodesByBeacon {
+		for i := 0; i < len(nodes); i++ {
+			curr := nodes[i]
+			bm.antiNodes[curr] = true
+			for j := i + 1; j < len(nodes); j++ {
+				next := nodes[j]
+
+				// Get the vector (delta) between the two nodes
+				delta := next.Sub(curr)
+
+				// Calculate the possible anti-nodes by extending both directions
+				// Forward: move from curr to next
+				fwd := next.Add(delta)
+
+				for bm.IsInBounds(fwd) {
+					bm.antiNodes[fwd] = true
+					fwd = fwd.Add(delta)
+				}
+
+				// Backward: move from next to curr
+				back := curr.Sub(delta)
+
+				for bm.IsInBounds(back) {
+					bm.antiNodes[back] = true
+					back = back.Sub(delta)
+				}
+			}
+		}
 	}
 }
 
@@ -127,14 +168,25 @@ func part1(path string) int {
 
 	timer.End()
 
-	fmt.Printf("RESULT: %d | TIME: %s\n", bMap.countAntiNodes, timer.TimeLapsed())
+	fmt.Printf("RESULT: %d | TIME: %s\n", len(bMap.antiNodes), timer.TimeLapsed())
 
-	return bMap.countAntiNodes
+	return len(bMap.antiNodes)
 }
 
 func part2(path string) int {
 	fmt.Println("DAY 8 PART 2")
-	fmt.Println("NOT IMPLEMENTED")
 
+	bMap := parseInput(path)
+
+	timer := utils.BuildTimer()
+	timer.Start()
+
+	bMap.SolveP2()
+
+	timer.End()
+
+	fmt.Printf("RESULT: %d | TIME: %s\n", len(bMap.antiNodes), timer.TimeLapsed())
+
+	return len(bMap.antiNodes)
 	return 0
 }

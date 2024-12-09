@@ -54,6 +54,4 @@ replace advent-of-code-2024/file_reader => ./file_reader
 
 replace advent-of-code-2024/utils => ./utils
 
-replace advent-of-code-2024/data_types => ./data_types
-
 go 1.23.1
