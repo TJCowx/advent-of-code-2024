@@ -4,6 +4,7 @@ package day04
 
 import (
 	"advent-of-code-2024/file_reader"
+	"advent-of-code-2024/utils"
 	"fmt"
 	"strings"
 )
@@ -240,6 +241,10 @@ func printCoords(board [][]string, coords [][]int) {
 func part1(path string) int {
 	fmt.Println("DAY 04 PART 1")
 	input := file_reader.Read(path)
+
+	timer := utils.BuildTimer()
+	timer.Start()
+
 	board := parseInput(input)
 	sum := 0
 
@@ -262,7 +267,8 @@ func part1(path string) int {
 	// DEBUGGING
 	// removeNonSafe(board, allSafeCoords)
 
-	fmt.Printf("RESULT: %d\n", sum)
+	timer.End()
+	fmt.Printf("RESULT: %d | TIME ELAPSED: %s\n", sum, timer.TimeLapsed())
 
 	return sum
 }
@@ -270,6 +276,10 @@ func part1(path string) int {
 func part2(path string) int {
 	fmt.Println("DAY 04 PART 2")
 	input := file_reader.Read(path)
+
+	timer := utils.BuildTimer()
+	timer.Start()
+
 	board := parseInput(input)
 	sum := 0
 
@@ -292,7 +302,8 @@ func part2(path string) int {
 	// DEBUGGING
 	// removeNonSafe(board, allSafeCoords)
 
-	fmt.Printf("RESULT: %d\n", sum)
+	timer.End()
+	fmt.Printf("RESULT: %d | TIME ELAPSED: %s\n", sum, timer.TimeLapsed())
 
 	return sum
 }

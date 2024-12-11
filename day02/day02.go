@@ -4,6 +4,7 @@ package day02
 
 import (
 	"advent-of-code-2024/file_reader"
+	"advent-of-code-2024/utils"
 	"fmt"
 	"strconv"
 	"strings"
@@ -42,6 +43,8 @@ func part1(path string) int {
 
 	lines := parse_input(path)
 
+	timer := utils.BuildTimer()
+	timer.Start()
 	var safeLevels int = 0
 
 	for _, line := range lines {
@@ -79,7 +82,8 @@ func part1(path string) int {
 		}
 	}
 
-	fmt.Printf("PART 1: %d\n", safeLevels)
+	timer.End()
+	fmt.Printf("PART 1: %d | TIME ELAPSED: %s\n", safeLevels, timer.TimeLapsed())
 
 	return safeLevels
 }
@@ -146,6 +150,9 @@ func part2(path string) int {
 
 	lines := parse_input(path)
 
+	timer := utils.BuildTimer()
+	timer.Start()
+
 	var safeLevels int = 0
 
 	for _, line := range lines {
@@ -155,22 +162,20 @@ func part2(path string) int {
 		if isSafe(nums, true) {
 			safeLevels++
 		} else {
-			fmt.Println(nums)
 			for i := 0; i < len(nums); i++ {
 				copyNums := append([]int{}, nums[:i]...)
 				copyNums = append(copyNums, nums[i+1:]...)
-				fmt.Println(copyNums)
 				if isSafe(copyNums, false) {
 					safeLevels++
 					break
 				}
 			}
 
-			fmt.Printf("FAILED: %s\n", line)
 		}
 	}
 
-	fmt.Printf("DAY 2 PART 2: %d\n", safeLevels)
+	timer.End()
+	fmt.Printf("DAY 2 PART 2: %d | TIME ELAPSED: %s\n", safeLevels, timer.TimeLapsed())
 
 	return safeLevels
 }

@@ -4,6 +4,7 @@ package day03
 
 import (
 	"advent-of-code-2024/file_reader"
+	"advent-of-code-2024/utils"
 	"fmt"
 	"regexp"
 	"strconv"
@@ -30,6 +31,9 @@ func part1(path string) int64 {
 
 	input := file_reader.Read(path)
 
+	timer := utils.BuildTimer()
+	timer.Start()
+
 	re := regexp.MustCompile(`mul\((\d+),(\d+)\)`)
 
 	matches := re.FindAllStringSubmatch(input, -1)
@@ -44,7 +48,8 @@ func part1(path string) int64 {
 		sum += eval
 	}
 
-	fmt.Printf("RESULT: %d\n", sum)
+	timer.End()
+	fmt.Printf("RESULT: %d | TIME ELAPSED: %s\n", sum, timer.TimeLapsed())
 
 	return sum
 }
@@ -53,6 +58,9 @@ func part2(path string) int64 {
 	fmt.Println("DAY 03 PART 2")
 
 	input := strings.ToLower(file_reader.Read(path))
+
+	timer := utils.BuildTimer()
+	timer.Start()
 
 	re := regexp.MustCompile(`(?:do(?:n't|)\(\)|$)`)
 	reMul := regexp.MustCompile(`mul\((\d+),(\d+)\)`)
@@ -79,7 +87,8 @@ func part2(path string) int64 {
 
 	}
 
-	fmt.Printf("RESULT: %d\n", sum)
+	timer.End()
+	fmt.Printf("RESULT: %d | TIME ELAPSED: %s\n", sum, timer.TimeLapsed())
 
 	return sum
 }

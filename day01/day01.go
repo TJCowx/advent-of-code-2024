@@ -4,6 +4,7 @@ package day01
 
 import (
 	"advent-of-code-2024/file_reader"
+	"advent-of-code-2024/utils"
 	"fmt"
 	"math"
 	"sort"
@@ -56,6 +57,9 @@ func part1(path string) int {
 
 	listA, listB := parse_lists(path)
 
+	timer := utils.BuildTimer()
+	timer.Start()
+
 	sort.Ints(listA)
 	sort.Ints(listB)
 
@@ -67,7 +71,8 @@ func part1(path string) int {
 		sum += int(math.Abs(float64(diff)))
 	}
 
-	fmt.Printf("ANSWER IS: %d\n", sum)
+	timer.End()
+	fmt.Printf("ANSWER IS: %d | TIME ELAPSED: %s\n", sum, timer.TimeLapsed())
 	return sum
 }
 
@@ -75,6 +80,9 @@ func part2(path string) int {
 	fmt.Println("Day 01, Part 2")
 
 	listA, listB := parse_lists(path)
+
+	timer := utils.BuildTimer()
+	timer.Start()
 
 	countMap := map[int]int{}
 
@@ -96,7 +104,8 @@ func part2(path string) int {
 		}
 	}
 
-	fmt.Printf("ANSWER IS %d\n", sum)
+	timer.End()
+	fmt.Printf("ANSWER IS %d | TIME ELAPSED: %s\n", sum, timer.TimeLapsed())
 
 	return sum
 }

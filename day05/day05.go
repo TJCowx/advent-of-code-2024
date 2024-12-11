@@ -4,6 +4,7 @@ package day05
 
 import (
 	"advent-of-code-2024/file_reader"
+	"advent-of-code-2024/utils"
 	"fmt"
 	"strconv"
 	"strings"
@@ -111,6 +112,10 @@ func isOrdered(rules map[int]map[int]bool, order []int) bool {
 
 func part1(path string) int {
 	fmt.Println("DAY 05 PART 1")
+
+	timer := utils.BuildTimer()
+	timer.Start()
+
 	rules, orders := parseInput(path)
 
 	sum := 0
@@ -121,7 +126,8 @@ func part1(path string) int {
 		}
 	}
 
-	fmt.Printf("RESULT: %d\n", sum)
+	timer.End()
+	fmt.Printf("RESULT: %d | TIME ELAPSED: %s\n", sum, timer.TimeLapsed())
 
 	return sum
 }
@@ -152,6 +158,10 @@ func getOrderedSum(rules map[int]map[int]bool, order []int) int {
 
 func part2(path string) int {
 	fmt.Println("DAY 05 PART 2")
+
+	timer := utils.BuildTimer()
+	timer.Start()
+
 	rules, orders := parseInput(path)
 
 	sum := 0
@@ -162,6 +172,7 @@ func part2(path string) int {
 		sum += getOrderedSum(rules, order)
 	}
 
-	fmt.Printf("RESULT: %d\n", sum)
+	timer.End()
+	fmt.Printf("RESULT: %d | TIME ELAPSED: %s\n", sum, timer.TimeLapsed())
 	return sum
 }

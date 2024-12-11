@@ -4,6 +4,7 @@ package day06
 
 import (
 	"advent-of-code-2024/file_reader"
+	"advent-of-code-2024/utils"
 	"fmt"
 	"strconv"
 	"strings"
@@ -151,6 +152,9 @@ func part1(path string) int {
 		lines = lines[:len(lines)-1]
 	}
 
+	timer := utils.BuildTimer()
+	timer.Start()
+
 	board := getBoard(path)
 
 	fmt.Printf("(%d, %d)", board.X, board.Y)
@@ -176,7 +180,8 @@ func part1(path string) int {
 
 	res := len(board.Visited)
 
-	fmt.Printf("RESULT: %d\n", res)
+	timer.End()
+	fmt.Printf("RESULT: %d\n | TIME ELAPSED: %s", res, timer.TimeLapsed())
 
 	return res
 }
@@ -189,6 +194,10 @@ func part2(path string) int {
 		lines = lines[:len(lines)-1]
 	}
 
+	timer := utils.BuildTimer()
+	timer.Start()
+
+	timer.End()
 	infiniteLoops := 0
 
 	return infiniteLoops
