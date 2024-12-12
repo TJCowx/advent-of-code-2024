@@ -38,7 +38,7 @@ func parseInput(path string) []int {
 	return vals
 }
 
-func splitStone(stoneNum int) []int {
+func splitStone(stoneNum int) (int, int) {
 	asStr := strconv.Itoa(stoneNum)
 
 	mid := len(asStr) / 2
@@ -46,25 +46,39 @@ func splitStone(stoneNum int) []int {
 	num1, _ := strconv.Atoi(asStr[:mid])
 	num2, _ := strconv.Atoi(asStr[mid:])
 
-	return []int{num1, num2}
+	return num1, num2
 }
 
-func blinkStone(stoneNum int) []int {
-	// Just split the stone into 2 if it's even
-	if stoneNum == 0 {
-		return []int{1}
+func buildKey(stone int, remainingBlinks int) string {
+	return strconv.Itoa(stone) + "-" + strconv.Itoa(remainingBlinks)
+}
+
+func solve(stone int, remainingBlinks int, cache map[string]int) int {
+	if remainingBlinks == 0 {
+		return 1
 	}
 
-	// If we have an even num of digits, split it in half
-	if len(strconv.Itoa(stoneNum))%2 == 0 {
-		return splitStone(stoneNum)
+	key := buildKey(stone, remainingBlinks)
+
+	if val, exists := cache[key]; exists {
+		return val
 	}
 
-	if stoneNum >= 9223372036854775807/2024 {
-		fmt.Printf("GOING TO BE OVERFLOW %d", stoneNum)
+	sum := 0
+
+	if stone == 0 {
+		sum += solve(1, remainingBlinks-1, cache)
+	} else if len(strconv.Itoa(stone))%2 == 0 {
+		subStone1, subStone2 := splitStone(stone)
+
+		sum += solve(subStone1, remainingBlinks-1, cache)
+		sum += solve(subStone2, remainingBlinks-1, cache)
+	} else {
+		sum += solve(stone*2024, remainingBlinks-1, cache)
 	}
 
-	return []int{stoneNum * 2024}
+	cache[key] = sum
+	return sum
 }
 
 func part1(path string) int {
@@ -74,29 +88,37 @@ func part1(path string) int {
 	timer := utils.BuildTimer()
 
 	timer.Start()
-	for i := 0; i < 25; i++ {
-		var blinkedStones []int
 
-		for _, stone := range stones {
-			blinkedStones = append(blinkedStones, blinkStone(stone)...)
-		}
-
-		stones = blinkedStones
-
-		fmt.Printf("RUN %d\n", i+1)
+	stoneCache := make(map[string]int)
+	sum := 0
+	for _, stone := range stones {
+		sum += solve(stone, 25, stoneCache)
 	}
-
-	res := len(stones)
 
 	timer.End()
 
-	fmt.Printf("RESULT: %d | TIME ELAPSED: %s\n", res, timer.TimeLapsed())
+	fmt.Printf("RESULT: %d | TIME ELAPSED: %s\n", sum, timer.TimeLapsed())
 
-	return res
+	return sum
 }
 
 func part2(path string) int {
 	fmt.Println("DAY 11 PART 2")
+	stones := parseInput(path)
 
-	return 0
+	timer := utils.BuildTimer()
+
+	timer.Start()
+
+	stoneCache := make(map[string]int)
+	sum := 0
+	for _, stone := range stones {
+		sum += solve(stone, 75, stoneCache)
+	}
+
+	timer.End()
+
+	fmt.Printf("RESULT: %d | TIME ELAPSED: %s\n", sum, timer.TimeLapsed())
+
+	return sum
 }
